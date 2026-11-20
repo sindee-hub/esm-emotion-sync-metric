@@ -1,0 +1,1078 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Emotion-Sync Metric™ — Module 1: Stabilization</title>
+<style>
+  :root{
+    --navy:#0b1026; --navy-deep:#070b1c; --gold:#d9c08a; --gold-soft:#e8d9b6;
+    --cyan:#7fd4e8; --ink:#2e3440; --ink-soft:#6b7280; --line:#e4e2dc;
+    --bg:#faf9f7; --card:#fffdfb; --accent:#8a959e; --deep:#3d4650;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:Georgia,'Times New Roman',serif; background:var(--bg); color:var(--ink); line-height:1.75;}
+  .wrap{max-width:860px; margin:0 auto; padding:40px 24px 70px;}
+
+  header.app{ text-align:center; padding:26px 16px 30px; }
+  header.app h1{font-size:1.8rem; font-weight:400; letter-spacing:2px; color:var(--deep);}
+  header.app .sub{color:var(--ink-soft); font-size:.9rem; margin-top:8px; letter-spacing:1px;}
+  header.app .ornament{color:var(--accent); font-size:.85rem; margin-top:10px; letter-spacing:4px;}
+
+  section{background:var(--card); border:1px solid var(--line); border-radius:4px; padding:34px 38px; margin-bottom:28px; box-shadow:0 1px 3px rgba(60,60,60,.04);}
+  .sec-tag{display:block; font-size:.7rem; letter-spacing:3px; text-transform:uppercase; color:var(--accent); margin-bottom:10px;}
+  section h2{font-size:1.35rem; font-weight:400; margin-bottom:6px; color:var(--deep); letter-spacing:.5px;}
+  .sec-desc{color:var(--ink-soft); font-size:.92rem; margin-bottom:22px; font-style:italic;}
+
+  button{font-family:inherit; cursor:pointer;}
+  .btn{border:1px solid var(--deep); background:var(--deep); color:#f7f5f2; border-radius:3px; padding:11px 26px; font-size:.9rem; letter-spacing:1px; transition:opacity .2s;}
+  .btn:hover{opacity:.85;}
+  .btn[disabled]{opacity:.35; cursor:not-allowed;}
+  .btn-ghost{background:transparent; color:var(--deep); border:1px solid var(--deep);}
+  .confirm-msg{font-size:.92rem; color:#5c6e62; margin-top:14px; font-style:italic;}
+  .gate-note{font-size:.82rem; color:var(--ink-soft); margin-top:14px; line-height:1.6;}
+  .gate-row{display:flex; align-items:center; gap:14px; margin-top:18px; flex-wrap:wrap;}
+  .gate-box{border:1px solid var(--line); border-radius:4px; padding:24px 26px; background:#fbfaf8;}
+  .gate-input{margin-top:14px;}
+  .gate-input label{font-size:.85rem; color:var(--ink-soft); display:block; margin-bottom:6px; letter-spacing:.5px;}
+  .gate-input input{font-family:inherit; font-size:1rem; padding:9px 12px; border:1px solid var(--line); border-radius:3px; width:100%; max-width:340px; background:#fff; color:var(--ink);}
+  .gate-input input:focus{outline:none; border-color:var(--accent);}
+
+  /* questionnaire */
+  .q-block{border-top:1px solid var(--line); padding:22px 0 8px;}
+  .q-block:first-of-type{border-top:none; padding-top:6px;}
+  .q-title{font-size:1.02rem; color:var(--deep);}
+  .q-num{color:var(--accent); font-size:.78rem; letter-spacing:2px;}
+  .cat-label{font-size:.68rem; color:var(--ink-soft); letter-spacing:2.5px; text-transform:uppercase; margin-bottom:3px;}
+  .opts{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin-top:14px;}
+  .opt{border:1px solid var(--line); border-radius:3px; background:#fff; padding:12px 10px; text-align:center; font-size:.86rem; color:var(--ink); transition:border-color .2s, background .2s, box-shadow .2s;}
+  .opt:hover{border-color:var(--accent); box-shadow:0 1px 4px rgba(60,60,60,.08);}
+  .opt .opt-score{display:inline-block; width:22px; height:22px; line-height:22px; border-radius:50%; border:1px solid var(--line); font-size:.75rem; color:var(--ink-soft); margin-bottom:6px;}
+  .opt .opt-desc{display:block; font-size:.8rem; color:var(--ink-soft); margin-top:4px; line-height:1.5;}
+  .opt.sel{border-color:var(--deep); font-weight:bold; box-shadow:0 1px 5px rgba(60,60,60,.1); background:#f1f5f7;}
+  .opt.sel .opt-score{background:var(--deep); color:#fff; border-color:var(--deep);}
+  .score-bar{position:sticky; bottom:0; margin-top:16px; background:#eef4f6; border:1px solid var(--line); border-radius:10px; padding:12px 18px; display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap; font-size:.92rem; z-index:5;}
+  .score-total{font-size:.95rem; color:var(--ink-soft); font-style:italic;}
+  .progress-track{flex:1 1 180px; min-width:160px; height:5px; background:#dde5e8; border-radius:4px; overflow:hidden;}
+  .progress-fill{height:100%; width:0%; background:var(--accent); border-radius:4px; transition:width .3s ease;}
+  #sec-quest.sealed .opt{pointer-events:none; opacity:.55;}
+  #sec-quest.sealed .score-bar{opacity:.6;}
+  .ack-box{border:1px solid var(--line); border-radius:4px; padding:22px 26px; margin-top:16px; background:#fbfaf8;}
+  .ack-title{font-size:1.05rem; color:var(--deep); letter-spacing:.5px; margin-bottom:10px;}
+  .ack-text{font-size:.9rem; color:var(--ink-soft); line-height:1.7;}
+  .ack-box .gate-row{margin-top:14px;}
+
+  /* report */
+  #report-empty{color:var(--ink-soft); font-style:italic;}
+  #report-area{display:none;}
+  .rep-actions{margin-top:26px; display:flex; gap:12px; flex-wrap:wrap; justify-content:center;}
+  .no-print{}
+  .rep-head{border-bottom:1px solid var(--line); padding-bottom:18px; margin-bottom:22px; text-align:center;}
+  .rep-head h3{font-size:1.5rem; font-weight:400; color:var(--deep); letter-spacing:1px;}
+  .rep-head .rep-sub{color:var(--ink-soft); font-size:.9rem; margin-top:6px; font-style:italic;}
+  .rep-meta{font-size:.84rem; color:var(--ink-soft); margin-top:12px; letter-spacing:.5px;}
+
+  .rep-pages{display:flex; flex-direction:column; gap:34px;}
+  .rp{background:#fffdfa; border:1px solid var(--line); border-radius:4px; overflow:hidden; page-break-inside:avoid; break-inside:avoid;}
+  .rp-pad{padding:32px 36px;}
+  .rp-kicker{font-size:.68rem; letter-spacing:3px; text-transform:uppercase; color:var(--accent); margin-bottom:10px;}
+  .rp-title{font-size:1.55rem; font-weight:400; color:var(--deep); letter-spacing:.5px; margin-bottom:6px;}
+  .rp-sub{font-size:.9rem; color:var(--ink-soft); font-style:italic; margin-bottom:18px;}
+  .rp-body{font-size:.94rem; color:var(--ink); line-height:1.85;}
+  .rp-body p{margin-bottom:12px;}
+  .rp-body .soft{color:var(--ink-soft);}
+  .rp-hr{border:none; border-top:1px solid var(--line); margin:18px 0;}
+  .rp-h4{font-size:1.05rem; color:var(--deep); letter-spacing:.5px; margin:22px 0 8px; font-weight:400;}
+  .rp-card{border:1px solid var(--line); border-radius:4px; padding:18px 20px; background:#fff; margin-bottom:14px;}
+  .rp-card h5{font-size:.98rem; margin-bottom:6px; font-weight:400; letter-spacing:.5px; color:var(--deep);}
+  .rp-card .rc-val{font-size:1.02rem; color:var(--ink); font-weight:bold; margin-bottom:8px;}
+  .rp-card .rc-body{font-size:.88rem; color:var(--ink-soft); line-height:1.7;}
+  .rp-gold{color:#a4862f;}
+  .rp-alert{border-left:3px solid var(--gold); background:#faf6ec; padding:14px 18px; font-size:.92rem; color:var(--ink); margin:10px 0;}
+  .rp-notice{border-left:3px solid var(--accent); background:#f4f6f7; padding:14px 18px; font-size:.88rem; color:var(--ink-soft); margin:10px 0; line-height:1.7;}
+  .rp-footer{border-top:1px solid var(--line); padding:12px 36px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:6px; font-size:.68rem; letter-spacing:1.5px; color:var(--ink-soft); text-transform:uppercase;}
+  .rp-final{text-align:center; padding:20px 0 6px;}
+  .rp-final .site{font-size:1.05rem; letter-spacing:3px; color:var(--deep);}
+
+  /* section-opening cover pages (workbook editorial layer) */
+  .cover{background:linear-gradient(160deg,#101735 0%,#0b1026 55%,#070b1c 100%); color:#eef2fb; padding:64px 40px; text-align:left; position:relative; overflow:hidden; page-break-inside:avoid; break-inside:avoid;}
+  .cover .c-stars{position:absolute; inset:0; pointer-events:none;}
+  .cover .c-brand{font-size:.72rem; letter-spacing:4px; text-transform:uppercase; color:var(--gold); margin-bottom:18px;}
+  .cover h3{font-size:1.7rem; font-weight:400; letter-spacing:1px; color:#f4f1e8; margin-bottom:12px; line-height:1.35;}
+  .cover .c-sub{font-size:1rem; color:#b9c4da; font-style:italic; line-height:1.7;}
+  .cover .c-prop{font-size:.68rem; color:#7a86a5; margin-top:34px; letter-spacing:.5px;}
+  .friendly-h{font-size:1.15rem; color:var(--deep); letter-spacing:.4px; margin:6px 0 12px; font-weight:normal;}
+  .friendly-h .fh-mark{color:#a4862f; margin-right:8px;}
+  .obs-block{border-left:3px solid var(--gold); background:#faf6ec; padding:16px 20px; margin:14px 0; font-size:.92rem; line-height:1.8;}
+
+  /* cover page — dedicated first page */
+  .cover-page{page-break-after:always; break-after:page; background:#0b1026; text-align:center;}
+  .cover-page img{width:100%; height:auto; display:block; max-width:820px; margin:0 auto;}
+  .obs-block .ob-t{font-weight:bold; color:var(--deep); margin-bottom:4px;}
+
+  /* radar chart */
+  .radar-fig{margin:6px 0 10px;}
+  .radar-fig svg{width:100%; height:auto; display:block;}
+  .radar-cap{font-size:.8rem; color:var(--ink-soft); font-style:italic; text-align:center; margin-top:8px;}
+  .radar-note{font-size:.78rem; color:var(--ink-soft); border-top:1px solid var(--line); margin-top:16px; padding-top:12px; line-height:1.7; font-style:italic;}
+  .axis-legend{margin-top:16px; display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:6px 18px; font-size:.86rem;}
+  .axis-legend .ax{display:flex; gap:10px; align-items:baseline;}
+  .axis-legend .ax .n{display:inline-block; min-width:20px; height:20px; line-height:20px; text-align:center; border-radius:50%; border:1px solid var(--gold); color:#a4862f; font-size:.72rem; flex:none;}
+  .axis-legend .ax .d{color:var(--ink);}
+
+  footer{ text-align:center; color:var(--ink-soft); font-size:.75rem; padding-top:10px; letter-spacing:1px;}
+
+  @media (max-width:640px){
+    section{padding:24px 18px;}
+    .rp-pad{padding:24px 20px;}
+    .rp-footer{padding:12px 20px;}
+    .opts{grid-template-columns:1fr 1fr;}
+  }
+
+  @media print{
+    @page{size:A4 portrait; margin:14mm;}
+    body{background:#fff;}
+    header.app, footer, .rep-actions, .no-print{display:none !important;}
+    body.report-mode #sec-gate, body.report-mode #sec-quest{display:none !important;}
+    #sec-report{border:none; background:#fff; box-shadow:none; padding:0; margin:0;}
+    section{border:none; box-shadow:none; padding:0; margin-bottom:10px; background:#fff;}
+    .rp{border:none; box-shadow:none; page-break-inside:avoid;}
+    .cover{page-break-inside:avoid; -webkit-print-color-adjust:exact; print-color-adjust:exact;}
+    .radar-fig svg{max-width:100%; -webkit-print-color-adjust:exact; print-color-adjust:exact;}
+    .rep-pages{gap:12px;}
+    .rp-h4, .cover h3{page-break-after:avoid;}
+    .cover-page{page-break-after:always; break-after:page; padding:0; margin:0;}
+    .cover-page img{max-height:calc(100vh - 28mm); object-fit:contain; width:auto; max-width:100%; margin:0 auto; -webkit-print-color-adjust:exact; print-color-adjust:exact;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="app no-print">
+  <h1>Emotion-Sync Metric™</h1>
+  <div class="sub">Individual Performance &amp; Resilience Dynamic Monitor · Module 1: Stabilization</div>
+  <div class="ornament">— ⟡ —</div>
+</header>
+
+<!-- ============ SECTION 1 : PAYMENT GATE ============ -->
+<section id="sec-gate">
+  <span class="sec-tag">Step 1 · Access</span>
+  <h2>Payment Confirmation</h2>
+  <div class="sec-desc">A quiet confirmation before the questionnaire opens.</div>
+  <div class="gate-box">
+    <p>After completing payment through the official payment link, enter the same details below to unlock your questionnaire.</p>
+    <div class="gate-input">
+      <label for="pay-name">Full Name (as used in payment)</label>
+      <input id="pay-name" type="text" autocomplete="off" placeholder="Your full name">
+    </div>
+    <div class="gate-row">
+      <button class="btn" id="unlock-btn" disabled>Unlock Questionnaire</button>
+      <span class="confirm-msg" id="gate-msg"></span>
+    </div>
+    <p class="gate-note">This preview version uses a simulated confirmation gate; no live payment verification is performed in this build.</p>
+  </div>
+</section>
+
+<!-- ============ SECTION 2 : QUESTIONNAIRE ============ -->
+<section id="sec-quest" style="display:none;">
+  <span class="sec-tag">Step 2 · Self-Check</span>
+  <h2>Stabilization Questionnaire</h2>
+  <div class="sec-desc">Over the past 14 days, how often has each of the following occurred? Choose the answer closest to your experience — there are no right or wrong answers.</div>
+  <div id="q-list"></div>
+  <div class="score-bar">
+    <span class="score-total" id="score-total">0 of 8 answered</span>
+    <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+  </div>
+  <div id="quest-reminder" style="display:none;">
+    <div class="ack-box">
+      <div class="ack-title">Before You Submit</div>
+      <div class="ack-text">Once submitted, your answers are locked and the questionnaire cannot be edited. Please take a quiet moment to review your responses before continuing.</div>
+      <div class="gate-row">
+        <button class="btn" id="submit-btn">Final Submission — Generate My Report</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SECTION 3 : REPORT ============ -->
+<section id="sec-report" style="display:none;">
+  <span class="sec-tag">Step 3 · Your Reflection</span>
+  <h2>Full Report</h2>
+  <div class="sec-desc">Your personal profile, ready to read, print, or copy.</div>
+  <div id="report-area">
+    <div id="esm-report">
+    <div class="rep-actions no-print" style="margin-bottom:18px;">
+      <button class="btn" id="print-btn">Print / Save as PDF</button>
+      <button class="btn btn-ghost" id="copy-btn">Copy Full Report</button>
+    </div>
+    <div class="rep-pages" id="rep-pages">
+      <div class="rp cover-page"><img id="cover-img" src="cover.webp" alt="Emotion-Sync Metric™ — Individual Performance & Resilience Dynamic Monitor cover"></div>
+    </div>
+    </div>
+  </div>
+</section>
+
+<footer class="no-print">Emotion-Sync Metric™ · Module 1: Stabilization · A structured self-reflection report</footer>
+</div>
+
+<script>
+/* ============================================================
+   Emotion-Sync Metric™ — Module 1: Stabilization (FULL EN)
+   Self-contained. No backend, no storage, no external libraries.
+   Scoring mirrors the ESM workbook (IDENTIFY DATA + LOGIC_ENGINE).
+   ============================================================ */
+
+const QUESTIONS = [
+  {q:1, t:"Do you feel muscle tension (such as sore shoulders), chest tightness, or difficulty breathing?", sys:"Physical stress"},
+  {q:2, t:"Do you have difficulty falling asleep, waking easily, or waking too early?", sys:"Sleep quality"},
+  {q:3, t:"Do you keep replaying one thing in your mind, unable to stop, searching for a perfect explanation?", sys:"Mental loops"},
+  {q:4, t:"Do you find it hard to concentrate — your mind feels like tangled threads at work or while reading?", sys:"Concentration"},
+  {q:5, t:"Do you feel unmotivated to do anything — even showering, socializing, or going to work feels like too much?", sys:"Motivation"},
+  {q:6, t:"Has this made it difficult to maintain your normal life and work?", sys:"Daily functioning"},
+  {q:7, t:"Do you suddenly feel like crying, or sense an empty void inside, without being able to say why?", sys:"Emotional signal"},
+  {q:8, t:"Do you strongly wish you could win the lottery and disappear — cutting off your current social ties?", sys:"Escape impulse"}
+];
+
+const SCORE_OPTS = [
+  {v:0, freq:"Not at all",      desc:"Never occurred in the past 14 days."},
+  {v:1, freq:"Occasionally / a few days", desc:"Occurred on 1–6 of the past 14 days."},
+  {v:2, freq:"Often / more than half",    desc:"Occurred on 7–11 of the past 14 days."},
+  {v:3, freq:"Almost every day",          desc:"Occurred on 12–14 of the past 14 days."}
+];
+
+const AXIS_LABELS = [
+  "Muscle tension / chest tightness",
+  "Sleep difficulties",
+  "Constant rumination / overthinking",
+  "Poor concentration / brain fog",
+  "Loss of interest / low motivation",
+  "Impaired daily functioning",
+  "Unexplained crying / emotional void",
+  "Intense urge to escape / withdrawal"
+];
+
+/* ---------- state ---------- */
+let answers = new Array(8).fill(null);
+let clientName = '';
+let locked = false;
+
+/* ---------- scoring engine (workbook LOGIC_ENGINE) ---------- */
+/* Axes B12..B16 per workbook formulas */
+function computeEngine(a){
+  const filled = a.every(v => v !== null);
+  if(!filled) return null;
+  const S3 = (a[0]+a[1])/2;           // B12 Physical Stress  = (Q1+Q2)/2
+  const S2 = (a[2]+a[3])/2;           // B13 Cognitive Load   = (Q3+Q4)/2
+  const S1 = (a[4]+a[5])/2;           // B14 Clinical Function = (Q5+Q6)/2
+  const S4 = a[6];                    // B15 Internal Emotion = Q7
+  const S7 = a[7];                    // B16 Escape Drive     = Q8
+  const axes = [S3,S2,S1,S4,S7];
+  const capacity = (3 - S1)/3;                                  // F13
+  const stdev = sampleStd(axes);                                // F14 (Excel STDEV)
+  const centroid = axes.reduce((s,x)=>s+x,0)/5;                 // F15 AVERAGE
+  const maxAxis = Math.max(...axes), minAxis = Math.min(...axes);
+  const spikeCount = axes.filter(x => x >= 2.2).length;         // F16
+  const spikeList = spikeCount === 0 ? "None" : spikeCount + " axis(es) elevated";
+  const alert = S1 >= 2 ? "RED" : (maxAxis >= 2.5 ? "ORANGE" : "GREEN"); // F17
+  const polarization = maxAxis - minAxis;                       // F18
+  const primaryID = axes.indexOf(maxAxis) === 0 ? "S3" :
+                    axes.indexOf(maxAxis) === 1 ? "S2" :
+                    axes.indexOf(maxAxis) === 2 ? "S1" :
+                    axes.indexOf(maxAxis) === 3 ? "S4" : "S7";  // F12 INDEX/MATCH(MAX)
+  return {S3,S2,S1,S4,S7,axes,capacity,stdev,centroid,spikeList,spikeCount,alert,polarization,primaryID,maxAxis,minAxis};
+}
+function sampleStd(arr){
+  const n = arr.length, m = arr.reduce((s,x)=>s+x,0)/n;
+  const ss = arr.reduce((s,x)=>s+(x-m)*(x-m),0);
+  return Math.sqrt(ss/(n-1));
+}
+const fmt2 = x => (Math.round(x*100)/100).toFixed(2);
+const fmt1 = x => (Math.round(x*10)/10).toFixed(1);
+const pct = x => Math.round(Math.max(0.05, x)*100) + "%";
+
+/* ---------- conditional text (FULL EN formulas) ---------- */
+const DRIVER = {
+  S1:{tag:"Functional Engagement", body:"The system is prioritizing execution and day-to-day functioning. Support focus with short, scheduled recovery breaks to sustain stability.",
+      deep:"In this phase, outward execution and responsiveness may feel more active. The system is optimizing for delivery and practical progress. To preserve long-term steadiness, brief structural pauses and task segmentation help prevent hidden fatigue from accumulating."},
+  S2:{tag:"Cognitive Strategy", body:"The system is allocating resources to analysis and problem-solving. Create deliberate thinking gaps to reduce noise and improve decision precision.",
+      deep:"Analytical bandwidth is elevated. The system may be reorganizing internal models and refining assumptions. This is often a recalibration phase rather than instability. Reducing input density and spacing decisions supports integration over repetition."},
+  S3:{tag:"Somatic Mobilization", body:"The system is mobilizing physiological energy for responsiveness. Use rhythm-based regulation to convert activation into steady performance.",
+      deep:"Physiological activation appears to be the relative high point. Alertness and readiness may be heightened. When rhythm and recovery are maintained, this mobilization supports performance. Without pacing, activation can gradually convert into strain. Gentle regulation preserves sustainability."},
+  S4:{tag:"Emotional Integration", body:"The system is processing internal emotional signals for alignment. Gentle acknowledgment supports integration and strengthens resilience.",
+      deep:"Emotional signals may be more accessible during this window. This does not imply decline; it often reflects internal re-alignment. Allowing signals to be acknowledged without over-interpretation supports coherence and long-term resilience."},
+  S7:{tag:"Boundary Protection", body:"The system is conserving energy through boundary tightening. Reduce non-essential interaction to reclaim pace and restore balance.",
+      deep:"Energy conservation appears intentional. The system is preserving resources through boundary tightening. Predictable recovery windows and reduced external demands support structural rebalancing."}
+};
+
+function capacityText(cap){
+  const c = Math.max(0.05, cap);
+  const band = cap>=0.8 ? "Resilience Reserve: Strong functional capacity is available. Maintain core routines to keep recovery margin high."
+    : cap>=0.5 ? "Active Load Phase: Capacity is stable under current demand. Use paced recovery to keep output sustainable."
+    : cap>0 ? "Conservation Phase: Capacity is being preserved for essentials. Reduce optional commitments to rebuild baseline strength."
+    : "Protective Minimum: Capacity is currently reading at the minimum range. Prioritize essentials and stabilization to gradually rebuild recovery margin.";
+  const deep = cap>=0.8 ? "Functional output and recovery capacity are co-existing. The key at this level is not expansion, but rhythm. Maintaining structural consistency protects resilience over time."
+    : cap>=0.5 ? "Capacity is sufficient for current demand. Sustainable pacing prevents invisible pressure from accumulating beneath stable performance."
+    : cap>0 ? "Resources are being preserved for essential functioning. Strategic simplification supports gradual rebuilding of baseline strength."
+    : "Capacity is limited at present. Stabilization and foundational routines take priority over expansion.";
+  return {head: pct(c) + " | " + band, deep};
+}
+function volatilityText(v){
+  const band = v<0.4 ? "Low Volatility: Load distribution is stable and consistent across axes, supporting smooth and efficient functioning."
+    : v<0.7 ? "Moderate Stability: Minor variation is present and often adaptive. Maintain steady routines and avoid unnecessary complexity."
+    : v<1.2 ? "Structured Shift: Resources are concentrating on selected axes. Introduce complementary recovery to maintain balance."
+    : v<2 ? "Sustained Elevation: Variation across axes is increasing. Reduce concurrent demands and simplify task load to support stabilization."
+    : "Stabilization Required: Elevated dispersion detected (Volatility: " + fmt2(v) + "). Prioritize essential tasks and reduce high-pressure demands until balance improves.";
+  const deep = v<0.4 ? "Load distribution remains closely aligned. This balanced configuration supports efficient functioning without significant internal redistribution."
+    : v<0.7 ? "Minor redistribution across axes is often adaptive. As long as routines remain stable, variation tends to self-correct naturally."
+    : v<1.2 ? "Selected dimensions are receiving more resource allocation. Complementary recovery prevents imbalance from consolidating."
+    : v<2 ? "Variation is widening across axes. Reducing parallel demands and restoring pacing supports re-alignment."
+    : "Dispersion is elevated. Prioritizing essentials and lowering high-pressure inputs allows structural balance to gradually return.";
+  return {head:band, deep};
+}
+function arousalText(x){
+  const band = x<1 ? "Low Activation: Energy is in a quiet mode. Use gentle movement, light exposure, or hydration to re-engage baseline momentum."
+    : x<2 ? "Stable Activation: A balanced level that supports steady focus and routine execution."
+    : x<2.6 ? "Active Mobilization: Energy is available for responsive action. Maintain pacing to support smooth performance."
+    : "Sustained Activation: Energy is elevated. Introduce short decompression blocks (breathing, reduced input) to support stability and prevent functional strain.";
+  const deep = x<1 ? "Energy is running quieter, which can sometimes show up as slower initiation or reduced urgency. This is a good window to rebuild rhythm gently—small cues (light, water, a short walk) often restore momentum without forcing intensity."
+    : x<2 ? "Activation is in a workable range. You can usually sustain steady tasks without significant strain. The best leverage here is consistency: fewer switches, clean task boundaries, and predictable breaks tend to keep output smooth."
+    : x<2.6 ? "Activation is elevated in a productive way, often showing up as faster response, higher readiness, or increased sensitivity to stimulation. The key is micro-regulation: short pauses before switching tasks help prevent activation from turning into pressure."
+    : "Activation is high and may feel like ‘always on.’ This does not require alarm—just tighter pacing. Reduce stimulation where possible (notifications, multitasking), and insert short downshifts so the system can return to baseline between outputs.";
+  return {head:"Arousal Level: " + fmt1(x) + "/3 | " + band, deep};
+}
+function cognitiveText(x){
+  const band = x<1 ? "Clear Bandwidth: Cognitive noise is low. A strong window for strategic thinking and high-precision decisions."
+    : x<2 ? "Focused Processing: Thinking speed is elevated but contained. Keep inputs simple to reduce unnecessary loops."
+    : x<2.6 ? "High Processing Load: Repetitive analysis is active. Reduce inputs before deciding to lower friction and improve clarity."
+    : "Sustained Processing: Cognitive activity is elevated. Pause new inputs and take a brief reset before making key decisions.";
+  const deep = x<1 ? "Thinking is relatively clean and direct. This is often when decisions feel ‘obvious’ and execution becomes simpler. Best use: lock one priority and move it forward with minimal re-checking to maintain clarity."
+    : x<2 ? "Processing is active but still efficient. You may notice quicker pattern recognition and faster comparisons. Common pitfall: over-collecting information. A simple guardrail helps—set a limit (e.g., 2 sources, 10 minutes) before choosing the next step."
+    : x<2.6 ? "Loops are more likely: revisiting the same question, re-reading, re-planning, or second-guessing. This often signals the system is seeking certainty. Helpful move: separate ‘thinking’ from ‘deciding’—capture notes first, then decide once, instead of deciding while thinking."
+    : "Repetition may feel persistent: mentally replaying options or scanning for the ‘perfect’ answer. Best strategy is not more analysis, but a reset of input conditions—reduce new information, return to one small action, and let clarity rebuild through execution.";
+  return {head:"Cognitive Redundancy: " + fmt1(x) + "/3 | " + band, deep};
+}
+function motivationText(S7, S2){
+  const raw = 1-(S7*0.7+S2*0.3)/3, m = Math.max(0, raw);
+  const band = m>0.8 ? "Strong Drive: Sustainable execution energy is available. Use it with pacing for best results."
+    : m>0.5 ? "Steady Drive: Motivation is stable. Keep priorities narrow to preserve momentum."
+    : m>0.2 ? "Reduced Drive: Energy is being conserved. Simplify commitments and protect recovery time."
+    : "Minimum Range: Energy is currently low. Prioritize essentials, rest, and supportive routines to gradually rebuild capacity.";
+  const deep = m>0.8 ? "Drive is readily available, which often supports consistent follow-through. The best protection here is intentional pacing—use momentum to complete high-value items, but keep recovery built into the schedule so capacity stays stable rather than spiking and dropping."
+    : m>0.5 ? "Motivation is steady and workable. Results tend to come from narrowing focus rather than pushing harder. A useful rule is ‘one main deliverable per block’—this preserves drive by reducing friction from constant switching."
+    : m>0.2 ? "Drive may be selectively available—strong for essentials, weaker for optional tasks. This usually means the system is protecting reserves. The most effective approach is lowering decision load: pre-choose simple routines and reduce ‘open loops’ so energy stops leaking into planning."
+    : "Drive is limited right now, which often shows up as ‘I can do it, but it costs more.’ This is a stabilization window: protect basics, keep standards realistic, and measure progress by consistency (small completion) rather than intensity.";
+  return {head: pct(Math.max(0.05, m)) + " | " + band, deep};
+}
+function centroidText(x){
+  const band = x<1.2 ? "Balanced Resource: Low-friction efficiency is available. Keep routines consistent and avoid over-stacking new demands."
+    : x<1.8 ? "Active Engagement: Demand is moderate. Maintain pacing to prevent avoidable pressure build-up."
+    : x<2.5 ? "High Resource Demand: Load is elevated. Reduce non-essential tasks and protect recovery blocks."
+    : "Stabilization Required: Load is elevated (" + fmt2(x) + "). Simplify outputs and prioritize essentials until demand eases.";
+  const deep = x<1.2 ? "Demand is proportionate to available resources. This is an efficiency window—small improvements compound quickly. Keep structure simple and stable; avoid adding complexity that creates friction without meaningful return."
+    : x<1.8 ? "Demand is moderate and sustainable when pacing is clean. Common risk is ‘quiet accumulation’—adding small extra tasks that slowly increase load. A helpful control is a fixed stop point: define when the workday or work-block ends before you start."
+    : x<2.5 ? "Demand is elevated. The system can still operate, but recovery margin becomes more sensitive. Best move: reduce non-essential outputs and convert tasks into smaller, clearly bounded blocks so pressure doesn’t spread across the day."
+    : "Demand is high relative to baseline. Stabilization is supported by simplification: fewer deliverables, shorter decision cycles, and clearer boundaries around availability. This helps demand ease without requiring force or over-control.";
+  return {head:"Load Intensity: " + fmt2(x) + " | " + band, deep};
+}
+function spikeText(e){
+  if(e.spikeList === "None") return {head:"Active Peaks: None detected. Axes are mobilizing in a coordinated way.",
+    deep:"There is no strong spike dominating your profile at present. This usually suggests your energy is being distributed in a more coordinated way, rather than being pulled too strongly in one direction. Keeping things steady and avoiding unnecessary complexity will help maintain this balance."};
+  if(e.spikeCount === 1) return {head:"Active Peaks: 1 axis(es) elevated | Sustained Mobilization: Elevated activation detected. Prioritize stabilization and reduce high-stakes decisions until activation softens.",
+    deep:"One part of your system appears to be more activated than the rest. That does not automatically mean anything is wrong, though it can make the system feel more concentrated or tense in one area. It may help to soften the pressure slightly and avoid making important decisions while activation is still high."};
+  const mx = e.maxAxis;
+  const band = mx<1.8 ? "Directed Mobilization: A focused axis is active. Support it with targeted decompression to keep the profile balanced."
+    : mx<2.6 ? "High Mobilization: One axis is running above baseline. Reduce parallel demands to prevent spillover into overall strain."
+    : "Peak Mobilization: Activation is elevated. Prioritize stabilization and reduce high-stakes decisions until activation softens.";
+  const sup = mx<1.8 ? "This looks more like a focused response than a major imbalance. A little targeted rest or decompression may be enough to keep things balanced."
+    : mx<2.6 ? "This suggests one area is working harder than usual and may need a bit more care. Reducing parallel demands can help prevent this from spilling into overall strain."
+    : "This usually means one area is carrying a lot, and the system may benefit from more stabilization before taking on extra pressure. For now, simplifying decisions and leaving more room for recovery would likely help the most.";
+  return {head:"Active Peaks: " + e.spikeList + " | " + band, deep:sup};
+}
+function symmetryText(v){
+  const band = v<0.5 ? "Stable Alignment: Axes remain closely balanced. The system is operating in a harmonized configuration."
+    : v<1.2 ? "Adaptive Shift: Mild redistribution across axes. This reflects responsive adjustment rather than instability."
+    : v<2.2 ? "Sustained Elevation: Multiple axes are rising together. This indicates coordinated activation across the system. A stabilization focus is recommended."
+    : "High Synchronization: Axes are elevated in parallel, indicating coordinated system-wide activation rather than isolated imbalance. A stabilization focus is recommended.";
+  const deep = v<0.5 ? "Balance is consistent across axes, suggesting the system is not over-investing in any single domain. This is a strong foundation for steady progress and clean decision-making."
+    : v<1.2 ? "A mild shift is present, often reflecting practical prioritization (one area temporarily needs more resources). As long as the shift remains reversible, this is typically healthy adaptation rather than imbalance."
+    : v<2.2 ? "Multiple axes are rising together, which can look like ‘everything is active at once.’ This can be effective short-term, but benefits from clear sequencing—do one block at a time to prevent overall load from feeling diffuse."
+    : "System-wide activation is elevated. The goal is not to suppress activity, but to structure it—reduce parallel demands, tighten time windows, and protect recovery points so alignment can return naturally.";
+  return {head:band, deep};
+}
+function polarizationText(p){
+  const band = p<=0.7 ? "Cohesive Structure: Axes are aligned and energy distribution is balanced. The system is operating in an integrated mode."
+    : p<=1.5 ? "Adaptive Shift: Mild redistribution across axes. This reflects responsive adjustment rather than structural imbalance."
+    : p<=2.4 ? "Structural Polarization: Distinct separation between activated and suppressed axes. Stabilize extremes before scaling decisions."
+    : "Extreme Polarization: Axes are highly split (simultaneous over-activation and suppression). Prioritize rebalancing before major commitments.";
+  const deep = p<=0.7 ? "Cohesive structure: Axes are closely aligned, indicating integrated resource distribution. This configuration supports stable execution and simplified decision flow."
+    : p<=1.5 ? "A moderate spread reflects selective emphasis rather than structural instability. The system is allocating proportionally to perceived demand. As long as foundational anchors remain supported, this redistribution remains adaptive and does not imply fragmentation."
+    : p<=2.4 ? "Noticeable spread indicates clearer differentiation between prioritized and background domains. Before scaling commitments, allow the structure to re-stabilize through simplified outputs and preserved recovery windows."
+    : "Elevated spread suggests pronounced divergence across axes. Strategic simplification and controlled pacing support reintegration before major expansion decisions.";
+  return {head:"Polarization / Structural Spread: " + fmt2(p) + " | " + band, deep};
+}
+const DECOMP = {
+  S1:{act:"Use a short offline reset (10–15 min) between delivery blocks to sustain steady execution.",
+      deep:"This phase benefits from micro-pauses that prevent ‘output drift.’ A short offline reset between delivery blocks helps maintain quality without overextending."},
+  S2:{act:"Reduce inputs for 15 minutes (notifications off, single-task focus) to lower cognitive noise before deciding.",
+      deep:"When cognition is leading, decompression is mostly input control. A brief window of reduced stimulation often restores clarity faster than more analysis."},
+  S3:{act:"Run a quick body reset (slow breathing, hydration, short walk) to settle activation and restore steadiness.",
+      deep:"When physiology is leading, decompression works best through rhythm: breath, hydration, brief movement, and light. The goal is not to reduce capacity, but to return activation to a sustainable range."},
+  S4:{act:"Name what you feel, then return to one grounding action. Gentle acknowledgment supports integration.",
+      deep:"When emotion is integrating, gentle naming plus one grounding action often prevents over-interpretation. Small, concrete steps support coherence."},
+  S7:{act:"Create a quiet boundary zone (fewer messages, fewer meetings) to reclaim pace and restore balance.",
+      deep:"When boundaries are tightening, decompression is environmental: fewer channels, fewer meetings, more quiet space. Predictability restores pace."}
+};
+function decompressionText(e){
+  if(e.alert === "RED") return {head:"Immediate Decompression: Safety-first mode. Reduce demands to essentials. If distress persists or daily functioning is meaningfully affected, consider consulting a qualified professional for additional support.",
+    deep:"Safety-first mode means the goal is steadiness, not performance. Reduce demands to essentials and prioritize basic supports. If distress persists or daily functioning is meaningfully disrupted, seeking support from a qualified professional can be a helpful option."};
+  const d = DECOMP[e.primaryID];
+  return {head:"Immediate Decompression: " + d.act, deep:d.deep};
+}
+function resourceText(x){
+  const band = x<1.2 ? "Balanced state. Maintain broad coverage while keeping tasks simple for compounding efficiency."
+    : x<2 ? "Allocate ~70% to low-friction tasks. Narrow priorities to protect core performance."
+    : x<2.8 ? "Protective mode. Concentrate on the key 20% deliverables and reduce optional outputs."
+    : "Stabilization mode. Pause expansion and direct resources to baseline recovery and essential operations.";
+  const deep = x<1.2 ? "When intensity is low, the best allocation strategy is compounding: keep tasks simple, finish cycles cleanly, and invest in small improvements that reduce friction. Avoid adding new projects purely because capacity feels open."
+    : x<2 ? "With moderate intensity, allocation works best when priorities are narrowed. A practical rule is ‘one main output + one support task’ per block. This protects performance by reducing context switching and invisible decision fatigue."
+    : x<2.8 ? "At higher intensity, resources benefit from concentration. Choose the few deliverables that keep the system stable, and let optional outputs wait. Short work blocks with clear endpoints protect recovery margin better than long, unbounded pushing."
+    : "In stabilization mode, allocation is about protection: minimize expansion, reduce commitments, and channel resources into essentials and recovery anchors. This supports steadiness without relying on force.";
+  return {head:"Resource Allocation: " + band, deep};
+}
+function boundaryText(v){
+  const band = v<0.7 ? "Structure is steady. Maintain current collaboration rhythm and preserve fixed recovery windows to sustain balance."
+    : v<1.5 ? "Mild redistribution detected. Create a protected focus zone: defer non-urgent collaboration and reduce immediate-response pressure."
+    : v<2.5 ? "Noticeable redistribution. Enter quiet prioritization mode: reduce high-demand communication and manage expectations with clear time windows."
+    : "Elevated redistribution. Significantly reduce external inputs and simplify communication. Retain only essential exchanges and schedule protected recovery blocks.";
+  const deep = v<0.7 ? "Stable volatility suggests boundaries can remain flexible without major cost. The key is predictability: keep recovery windows protected so collaboration stays supportive rather than consuming."
+    : v<1.5 ? "When redistribution is mild, small boundary adjustments create big gains. Examples: delayed replies, fewer check-ins, and defined time windows for communication. This preserves focus without needing hard shutdowns."
+    : v<2.5 ? "When redistribution is more visible, boundaries work best as structure—not avoidance. Define availability windows, reduce high-demand conversations, and keep agreements clear. This prevents external input from driving internal load."
+    : "When redistribution is high, simplification protects stability. Reduce inbound channels, limit meetings, and keep only essential exchanges. A quieter environment allows the system to re-balance naturally.";
+  return {head:"Boundary Reinforcement: " + band, deep};
+}
+function step1Text(e){
+  const mx = e.maxAxis;
+  const inten = mx<1.2 ? "Maintain steady baseline." : mx<1.8 ? "Light stabilization approach." : mx<2.5 ? "Focused stabilization approach."
+    : "Stabilization-first approach: activation is elevated. Reduce non-essential demands and prioritize baseline recovery.";
+  const deep = "Right now, " + (mx<1.2 ? "things are relatively steady, so the focus is simply to maintain that baseline."
+    : mx<1.8 ? "a light stabilization approach is enough — small adjustments will go a long way."
+    : mx<2.5 ? "your system may benefit from a more focused stabilization approach to prevent further build-up."
+    : "your system is currently more activated, so stabilizing comes first before anything else.");
+  return {head:"Step-1: Stabilization (1–3 days) — Goal: return to a workable baseline. Actions: (1) protect sleep/food/minimum delivery, (2) track one metric only: does overall load drop by 0.2 vs yesterday, (3) replace self-judgment with the smallest next action. Current intensity: " + inten,
+    inten,
+    deep:"The first step is to gently bring your system back to a more workable baseline over the next few days. " + deep.charAt(0).toUpperCase() + deep.slice(1) + " Keeping things simple will help the most — prioritising rest, basic routines, and only what is necessary. Focusing on one small next step at a time is enough."};
+}
+function step2Text(e){
+  if(e.alert === "RED") return {head:"Step-2: Supported Stabilization — Emphasize predictable routines and consider working with a qualified professional for steadier guidance while rebuilding baseline stability.",
+    deep:"The next step is to create a more supported and predictable structure around your system. Keeping things steady and supported is more important than pushing forward. Having guidance or structure around you can help rebuild stability more safely."};
+  const map = {
+    S2:"Step-2: Cognitive Re-patterning — Use single-thread execution. Complete 3 core tasks per day, reduce context switching, and restore decision clarity.|Your system is leaning toward thinking and processing, so simplifying decisions and focusing on one thing at a time will help restore clarity.",
+    S3:"Step-2: Somatic Recalibration — Add rhythmic movement (walk/stretch) to regulate activation and stabilize energy cycles.|Your system is more active physically, so gentle movement and rhythm can help release excess activation and stabilise your energy.",
+    S1:"Step-2: Performance Pacing — Insert short scheduled recovery breaks to sustain output smoothly.|Your system is focused on getting things done, so adding short recovery pauses will help sustain your output without strain.",
+    S4:"Step-2: Emotional Integration — Label 3 moments per day and pair each with one grounding action to support integration.|Your system is processing emotions, so acknowledging what you feel in small, manageable moments will support integration.",
+    S7:"Step-2: Boundary Reinforcement — Adjust environment (space/time) to reduce incoming load and restore pace.|Your system is protecting energy, so adjusting your environment to reduce incoming demands will help restore your pace."};
+  const [head, deep] = map[e.primaryID].split("|");
+  return {head, deep:"The next step is to gently guide your system in the direction it is already leaning toward. " + deep};
+}
+function successText(e){
+  if(e.alert === "RED") return {head:"Success Indicator: Support status returns to a steady range (no RED). Peak axis values reduce below 2.0, with baseline functioning improving (sleep/food/basic autonomy).",
+    deep:"Progress is indicated when the profile returns to a steady range and extremes soften. The practical marker is improved day-to-day stability (sleep, food, basic routines) with reduced peaks—showing the system has regained self-regulation capacity."};
+  if(e.centroid > 2.2) return {head:"Success Indicator: Load Intensity returns below 1.5, indicating overall demand has eased and pacing is more sustainable.",
+    deep:"When intensity is high, success is measured by demand easing—not by pushing through. A trend toward lower intensity reflects restored sustainability and a wider recovery margin."};
+  if(e.stdev > 1) return {head:"Success Indicator: Short-term Volatility returns below 0.7, indicating load distribution is re-balancing across axes.",
+    deep:"When volatility is elevated, success is a return toward balance. As dispersion reduces, decisions and execution usually become simpler because fewer axes compete for attention."};
+  return {head:"Success Indicator: Operational Capacity returns above 90%, indicating a stable recovery margin and readiness for the next module.",
+    deep:"With capacity above 90%, readiness is about consistency. Sustaining the recovery margin across a stable window (rather than a single good day) indicates the system can proceed without relying on over-effort."};
+}
+/* gentle narrative (TBCOMPLETE LET formulas) */
+function narrative1(e){
+  const d = DRIVER[e.primaryID];
+  const opener = {S1:"At the moment, your system is mainly focused on keeping things moving and handling day-to-day demands.",
+    S2:"Currently, your system is spending more energy trying to think things through and make sense of what is happening.",
+    S3:"Your system appears to be running in a more active and responsive state.",
+    S4:"There is a sense that your system is processing emotions in the background.",
+    S7:"Your system is becoming more selective, likely trying to protect your energy."}[e.primaryID];
+  const cap = e.capacity>=0.8 ? "You still have a relatively solid base underneath you, so this is not a collapse state."
+    : e.capacity>=0.5 ? "You are still functioning, though pacing will be important to stay steady."
+    : "Your energy is becoming more limited, and part of your system may already be conserving itself.";
+  const vol = e.stdev<0.4 ? "Overall, things remain fairly steady internally."
+    : e.stdev<0.7 ? "There are some small fluctuations, but your state is still manageable."
+    : e.stdev<1.2 ? "Your system is starting to shift, with some areas taking more load."
+    : e.stdev<2 ? "Internal variation is increasing, which may feel less settled."
+    : "Your system is showing higher instability, suggesting a need for simplification.";
+  let meaning, close;
+  if(e.capacity>=0.8 && e.stdev<0.7){ meaning="You’re holding things together quite well, but that does not mean you should keep adding more."; close="This is a maintain-your-rhythm state, not a push-harder state."; }
+  else if(e.capacity>=0.5 && e.stdev<1.2){ meaning="You’re managing, though there is still underlying load."; close="Keeping things simple and steady will help more than pushing further."; }
+  else if(e.capacity<0.5 && e.stdev>=1.2){ meaning="Your system may be feeling stretched, even small tasks may take more effort."; close="Reducing pressure and narrowing focus will help restore balance."; }
+  else if(e.capacity<0.5){ meaning="Your system may be conserving energy more than you realise."; close="The more you reduce unnecessary load, the easier recovery becomes."; }
+  else { meaning="Your system is responding, but it also needs steadiness."; close="A steadier rhythm will help your system feel more supported."; }
+  return [opener, cap + " " + vol, meaning, close].join("\n\n");
+}
+function narrative2(e){
+  const a=e.S3, c=e.S2, m=Math.max(0, 1-(e.S7*0.7+e.S2*0.3)/3);
+  const aTxt = a<1 ? "Your energy feels relatively quiet, and it may take more effort to get started."
+    : a<2 ? "Your energy is in a balanced and steady place."
+    : a<2.6 ? "You have energy available, and your system is more responsive than usual."
+    : "Your energy is elevated, and your system may be staying active for longer than ideal.";
+  const cTxt = c<1 ? "Your mind is relatively clear, without much internal noise."
+    : c<2 ? "Your thinking is active but still contained."
+    : c<2.6 ? "Your mind is processing a lot, and you may notice looping or overthinking."
+    : "Your mental activity is high, and it may feel hard to fully switch off.";
+  const mTxt = m>0.8 ? "You still have a good level of drive available."
+    : m>0.5 ? "Your motivation is present, though it works best when things stay simple."
+    : m>0.2 ? "Part of your system is conserving energy, so your drive may feel inconsistent."
+    : "Your energy reserves are low, and even small tasks may feel heavier.";
+  let meaning, close;
+  if(a>=2 && c>=2.6 && m<0.5){ meaning="You have energy, but your mind is overloaded and your system is getting tired."; close="Slowing down and reducing inputs will help your system settle."; }
+  else if(a>=2 && c>=2 && m>=0.5){ meaning="You are active and engaged, but carrying quite a lot at once."; close="Keeping things simple and working in smaller blocks will support stability."; }
+  else if(a<2 && c>=2.6){ meaning="Your mind is working harder than your energy can support."; close="Giving your mind space will help restore balance."; }
+  else if(m<0.3){ meaning="Your system may be protecting itself by lowering your drive."; close="Focusing on essentials and allowing rest will support recovery."; }
+  else { meaning="Your system is active, but it also needs steadiness."; close="A gentle, steady pace will help your system feel more supported."; }
+  return [aTxt + " " + cTxt, mTxt, meaning, close].join("\n\n");
+}
+function narrative3(e){
+  const x=e.centroid;
+  const main = x<1.2 ? "Overall, the demand on your system remains fairly manageable."
+    : x<1.8 ? "At the moment, your system is engaged and carrying a moderate level of demand."
+    : x<2.5 ? "At present, your system is carrying quite a lot, and pressure may be building more than it seems."
+    : "Currently, your system is under a high level of demand, and things may feel heavier than usual.";
+  const sup = x<1.2 ? "There is still some ease available here, which means you do not need to force more than what is necessary."
+    : x<1.8 ? "You are likely still functioning well, though pacing will make a meaningful difference in how steady everything feels."
+    : x<2.5 ? "Even if you are still managing, your system may not have as much extra room as it appears to have."
+    : "This usually means gentler pacing and simplification will support you more than trying to push through.";
+  const close = x<1.2 ? "Keeping your routine simple and consistent will help preserve this steadiness."
+    : x<1.8 ? "A slightly gentler pace can help prevent avoidable build-up."
+    : x<2.5 ? "It may help to reduce non-essential tasks and leave more room for recovery."
+    : "For now, focusing on essentials and lowering pressure will support your system best.";
+  return [main + " " + sup, close].join("\n\n");
+}
+function narrative4(e){
+  return spikeText(e).deep;
+}
+function narrative5(e){
+  return symmetryText(e.stdev).deep;
+}
+function narrative6(e){
+  return polarizationText(e.polarization).deep;
+}
+/* Observed Pattern (FULL EN A479): J-column pattern observations from LOGIC_ENGINE */
+const PATTERN_OBS = [
+  "You might feel like part of you is moving forward, while another part is still stuck, and that can make things feel a bit off or unsettled.",
+  "You may feel like you have a lot on your mind at the same time, like your head is a bit full.",
+  "You might notice that your state goes up and down, sometimes okay, and sometimes suddenly a bit tense or heavy.",
+  "You may notice yourself thinking about the same thing a few times before you feel ready to decide."
+];
+function observedPatternText(){
+  return "Observed Pattern\n(Based on your current system signals · Non-Clinical · System-Referenced)\n\nBased on your current state, you might notice:\n• " +
+    PATTERN_OBS.join("\n• ") +
+    "\n\nRight now, your system doesn’t seem to be rushing to close things quickly. Some parts may still be in progress, and that’s okay. It can simply mean that your mind and body are taking a bit more time to process what’s going on." +
+    "\n\nThis doesn’t mean something is wrong. It just reflects how your system is handling things at this moment." +
+    "\n\nYou are not stuck. You are still processing, just at your own pace." +
+    "\n\nGentle note\nThere’s no need to force yourself to figure everything out right away. Let smaller things settle step by step, and clarity will come more naturally." +
+    "\n\nImportant note\nThis section is for self-understanding only. It is not a diagnosis or any form of medical or psychological assessment.";
+}
+
+/* section cover component */
+function coverSVG(){
+  let seed = 777;
+  const rnd = () => { seed = (seed*1103515245 + 12345) & 0x7fffffff; return seed/0x7fffffff; };
+  let stars = '';
+  for(let i=0;i<70;i++){
+    const x=rnd()*800, y=rnd()*420, r=rnd()*1.3+0.3, o=(rnd()*0.45+0.12).toFixed(2);
+    stars += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}" fill="#cfd8ea" opacity="${o}"/>`;
+  }
+  for(let i=0;i<4;i++){
+    const x=rnd()*800, y=rnd()*420, s=rnd()*4+4;
+    stars += `<path d="M ${x} ${y-s} L ${x+s*0.28} ${y-s*0.28} L ${x+s} ${y} L ${x+s*0.28} ${y+s*0.28} L ${x} ${y+s} L ${x-s*0.28} ${y+s*0.28} L ${x-s} ${y} L ${x-s*0.28} ${y-s*0.28} Z" fill="#e8d9b6" opacity="${(rnd()*0.35+0.35).toFixed(2)}"/>`;
+  }
+  return `<svg class="c-stars" viewBox="0 0 800 420" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${stars}</svg>`;
+}
+function cover(brand, title, sub){
+  return `<div class="cover">${coverSVG()}
+    <div class="c-brand">${brand}</div>
+    <h3>${title}</h3>
+    <div class="c-sub">${sub}</div>
+    <div class="c-prop">The Emotion-Sync Metric™ system structure and interpretation framework are part of a proprietary design.</div>
+  </div>`;
+}
+function friendly(title){
+  return `<div class="friendly-h"><span class="fh-mark">✦</span>${title}</div>`;
+}
+
+/* alert presentation — internal level drives gentle client language only */
+function alertTexts(e){
+  if(e.alert === "RED") return {
+    banner:"⟡ [M1-PRIORITY SUPPORT] Stabilization and support are the priority. Reduce task density, protect essentials (sleep, nourishment, minimum viable delivery), and consider professional support to help you return to a sustainable baseline.",
+    notice:"Support Notice | If you experience persistent distress, meaningful disruption to daily functioning (sleep, eating, work), or any safety concerns, please contact local emergency services or seek support from a licensed medical or mental health professional. This report supports structured self-observation and stabilization and does not replace professional evaluation or care."
+  };
+  if(e.alert === "ORANGE") return {
+    banner:"⟡ [M1-ATTENTION] Elevated activation detected (Peak: " + fmt2(e.maxAxis) + "). Activate low-demand mode and schedule a deeper reset within 24–48 hours (sleep, nourishment, low input).",
+    notice:"Support Notice | If stress remains elevated or begins to affect daily functioning, consider connecting with a qualified medical or mental health professional for additional guidance and support."
+  };
+  return {
+    banner:"⟡ [M1-STABLE] Profile is steady. Maintain your baseline anchors (sleep, nourishment, minimum viable delivery) and continue gentle tracking for stability.",
+    notice:""
+  };
+}
+
+/* ---------- radar chart (SVG, dynamic) ---------- */
+function radarSVG(vals){
+  const W=560, H=560, cx=W/2, cy=H/2+14, R=190;
+  const N=vals.length, MAX=3;
+  const ang = i => -Math.PI/2 + i*2*Math.PI/N;
+  const pt = (i,r) => [cx + r*Math.cos(ang(i)), cy + r*Math.sin(ang(i))];
+  // deterministic star field
+  let stars = '';
+  let seed = 20261106;
+  const rnd = () => { seed = (seed*1103515245 + 12345) & 0x7fffffff; return seed/0x7fffffff; };
+  for(let i=0;i<90;i++){
+    const x=rnd()*W, y=rnd()*H, r=rnd()*1.4+0.3, o=(rnd()*0.5+0.15).toFixed(2);
+    stars += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}" fill="#cfd8ea" opacity="${o}"/>`;
+  }
+  for(let i=0;i<5;i++){
+    const x=rnd()*W, y=rnd()*H, s=rnd()*4+4;
+    stars += `<path d="M ${x} ${y-s} L ${x+s*0.28} ${y-s*0.28} L ${x+s} ${y} L ${x+s*0.28} ${y+s*0.28} L ${x} ${y+s} L ${x-s*0.28} ${y+s*0.28} L ${x-s} ${y} L ${x-s*0.28} ${y-s*0.28} Z" fill="#e8d9b6" opacity="${(rnd()*0.4+0.4).toFixed(2)}"/>`;
+  }
+  // rings at 1,2,3
+  let rings = '';
+  for(let g=1; g<=MAX; g++){
+    const r = R*g/MAX;
+    const p = []; for(let i=0;i<N;i++){ p.push(pt(i,r).map(v=>v.toFixed(1)).join(',')); }
+    rings += `<polygon points="${p.join(' ')}" fill="none" stroke="#9fb3cf" stroke-width="${g===MAX?1.4:0.8}" opacity="${g===MAX?0.5:0.28}"/>`;
+  }
+  // spokes + axis numbers
+  let spokes = '';
+  for(let i=0;i<N;i++){
+    const [x,y] = pt(i,R);
+    spokes += `<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#9fb3cf" stroke-width="0.8" opacity="0.3"/>`;
+    const [lx,ly] = pt(i, R+26);
+    spokes += `<text x="${lx.toFixed(1)}" y="${(ly+4).toFixed(1)}" text-anchor="middle" font-size="13" fill="#d9c08a" font-family="Georgia, serif">${i+1}</text>`;
+  }
+  // profile polygon
+  const pp = vals.map((v,i)=>pt(i, R*Math.max(0,Math.min(MAX,v))/MAX).map(c=>c.toFixed(1)).join(',')).join(' ');
+  const dots = vals.map((v,i)=>{ const [x,y]=pt(i,R*v/MAX);
+    return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4" fill="#7fd4e8" stroke="#0b1026" stroke-width="1.5"/>`; }).join('');
+  return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Radar profile of eight self-check scores on a zero to three scale">
+  <defs>
+    <radialGradient id="rg" cx="50%" cy="42%" r="75%">
+      <stop offset="0%" stop-color="#101735"/><stop offset="60%" stop-color="#0b1026"/><stop offset="100%" stop-color="#070b1c"/>
+    </radialGradient>
+  </defs>
+  <rect x="0" y="0" width="${W}" height="${H}" rx="10" fill="url(#rg)"/>
+  ${stars}
+  ${rings}
+  ${spokes}
+  <polygon points="${pp}" fill="rgba(127,212,232,0.14)" stroke="#7fd4e8" stroke-width="2.2" stroke-linejoin="round"/>
+  ${dots}
+</svg>`;
+}
+
+/* ---------- flow: gate ---------- */
+const nameInput = document.getElementById('pay-name');
+const unlockBtn = document.getElementById('unlock-btn');
+const gateMsg = document.getElementById('gate-msg');
+nameInput.addEventListener('input', () => { unlockBtn.disabled = nameInput.value.trim().length < 2; });
+unlockBtn.addEventListener('click', () => {
+  clientName = nameInput.value.trim();
+  document.getElementById('sec-gate').style.display = 'none';
+  document.getElementById('sec-quest').style.display = '';
+  document.getElementById('sec-quest').scrollIntoView({behavior:'smooth'});
+});
+
+/* ---------- questionnaire ---------- */
+function buildQuestions(){
+  const wrap = document.getElementById('q-list');
+  QUESTIONS.forEach((item, qi) => {
+    const b = document.createElement('div');
+    b.className = 'q-block';
+    b.innerHTML = `<div class="cat-label">Q${item.q} · ${item.sys}</div>
+      <div class="q-title">${item.t}</div>
+      <div class="opts">` + SCORE_OPTS.map(o =>
+        `<button type="button" class="opt" data-q="${qi}" data-v="${o.v}">
+           <span class="opt-score">${o.v}</span>
+           <span>${o.freq}</span>
+           <span class="opt-desc">${o.desc}</span>
+         </button>`).join('') + `</div>`;
+    wrap.appendChild(b);
+  });
+  wrap.addEventListener('click', e => {
+    const btn = e.target.closest('.opt');
+    if(!btn || locked) return;
+    const qi = +btn.dataset.q, v = +btn.dataset.v;
+    answers[qi] = v;
+    wrap.querySelectorAll(`.opt[data-q="${qi}"]`).forEach(x => x.classList.toggle('sel', +x.dataset.v === v));
+    updateScore();
+  });
+}
+function updateScore(){
+  const n = answers.filter(v => v !== null).length;
+  document.getElementById('score-total').textContent = n + ' of 8 answered';
+  document.getElementById('progress-fill').style.width = (n/8*100) + '%';
+  document.getElementById('quest-reminder').style.display = n === 8 ? '' : 'none';
+}
+document.getElementById('submit-btn').addEventListener('click', () => {
+  // validate: every question must be answered before finalization
+  const unanswered = answers.filter(v => v === null).length;
+  if (unanswered > 0) {
+    document.getElementById('score-total').textContent = 'Please answer all 8 questions before submitting (' + (8 - unanswered) + ' of 8 answered).';
+    return;
+  }
+  locked = true;
+  // functional lock: permanently disable every answer control
+  document.querySelectorAll('#q-list .opt').forEach(b => { b.disabled = true; });
+  document.getElementById('sec-quest').classList.add('sealed');
+  // remove submission controls from the interface
+  document.getElementById('quest-reminder').style.display = 'none';
+  // generate report and switch to Report View; questionnaire view is hidden.
+  // body.report-mode is the functional lock state used by the app AND the print stylesheet.
+  buildReport();
+  document.body.classList.add('report-mode');
+  document.getElementById('sec-gate').style.display = 'none';
+  document.getElementById('sec-quest').style.display = 'none';
+  document.getElementById('sec-report').style.display = '';
+  document.getElementById('report-area').style.display = 'block';
+  document.getElementById('sec-report').scrollIntoView({behavior:'smooth'});
+});
+
+/* ---------- report ---------- */
+function card(title, val, body){
+  return `<div class="rp-card"><h5>${title}</h5><div class="rc-val">${val}</div><div class="rc-body">${body}</div></div>`;
+}
+function buildReport(){
+  const e = computeEngine(answers);
+  const dateStr = new Date().toLocaleDateString('en-GB', {day:'numeric', month:'long', year:'numeric'});
+  const d = DRIVER[e.primaryID];
+  const cap = capacityText(e.capacity), vol = volatilityText(e.stdev);
+  const aro = arousalText(e.S3), cog = cognitiveText(e.S2), mot = motivationText(e.S7, e.S2);
+  const cen = centroidText(e.centroid), spk = spikeText(e), sym = symmetryText(e.stdev), pol = polarizationText(e.polarization);
+  const dec = decompressionText(e), res = resourceText(e.centroid), bnd = boundaryText(e.stdev);
+  const s1 = step1Text(e), s2 = step2Text(e), suc = successText(e);
+  const al = alertTexts(e);
+
+  // keep the cover page (first child) and rebuild the report content after it
+  const coverEl = document.getElementById('rep-pages').querySelector('.cover-page');
+  document.getElementById('rep-pages').innerHTML = '';
+  if (coverEl) { document.getElementById('rep-pages').appendChild(coverEl); }
+  document.getElementById('rep-pages').insertAdjacentHTML('beforeend', `
+  ${cover('Emotion-Sync Metric™', 'Individual Performance & Resilience Dynamic Monitor',
+    'Module 1: Stabilization · A clear read on your internal state — before it turns into overwhelm.')}
+  <div class="rp"><div class="rp-pad" style="text-align:center;">
+    <div class="rp-meta"><b>${esc(clientName)}</b> · PROFILE DATE ${dateStr}</div>
+  </div></div>
+
+  <div class="rp"><div class="rp-pad">
+    <div class="rp-kicker">Profile Chart</div>
+    <div class="rp-title" style="font-size:1.25rem;">Individual Stress &amp; Functioning Profile</div>
+    <div class="radar-fig" id="radar-fig">${radarSVG(answers.slice())}</div>
+    <div class="axis-legend">
+      ${AXIS_LABELS.map((t,i)=>`<div class="ax"><span class="n">${i+1}</span><span class="d">${t}</span></div>`).join('')}
+    </div>
+    <div class="radar-note">This visualization is a strategic mapping of self-reported data for personal optimization. It represents a state of flow and is not a medical diagnostic tool. Axes are numbered 1–8 and correspond to the eight self-check items above; rings mark scores 1, 2 and 3 on the 0–3 response scale.</div>
+  </div></div>
+
+  ${cover('Emotion-Sync Metric™', 'CORE DIAGNOSIS &amp; CURRENT SITUATION',
+    "Where your energy is currently going — and what’s driving it.")}
+  <div class="rp"><div class="rp-pad">
+    ${card('Primary Load Driver', d.tag, d.body)}
+    <p class="soft">${d.deep}</p>
+    <hr class="rp-hr">
+    ${card('Operational Capacity', cap.head, '')}
+    <p class="soft">${cap.deep}</p>
+    <hr class="rp-hr">
+    ${card('Short-term Volatility', vol.head, '')}
+    <p class="soft">${vol.deep}</p>
+  </div></div>
+
+  ${cover('Emotion-Sync Metric™', 'EMOTION STATUS / INTERNAL LOAD',
+    "What’s actively running inside you right now.")}
+  <div class="rp"><div class="rp-pad">
+    ${card('Arousal Level', aro.head, '')}
+    <p class="soft">${aro.deep}</p>
+    <hr class="rp-hr">
+    ${card('Cognitive Redundancy', cog.head, '')}
+    <p class="soft">${cog.deep}</p>
+    <hr class="rp-hr">
+    ${card('Motivation Reserve', mot.head, '')}
+    <p class="soft">${mot.deep}</p>
+  </div></div>
+
+  ${cover('Emotion-Sync Metric™', 'RADAR INTERPRETATION',
+    "Not how intense it feels — but how it’s actually structured.")}
+  <div class="rp"><div class="rp-pad">
+    ${card('Geometric Centroid', cen.head, '')}
+    <p class="soft">${cen.deep}</p>
+    <hr class="rp-hr">
+    ${card('Spike Analysis', spk.head, '')}
+    <p class="soft">${spk.deep}</p>
+    <hr class="rp-hr">
+    ${card('Symmetry &amp; Balance', sym.head, '')}
+    <p class="soft">${sym.deep}</p>
+    <hr class="rp-hr">
+    ${card('Polarization / Structural Spread', pol.head, '')}
+    <p class="soft">${pol.deep}</p>
+  </div></div>
+
+  ${cover('Emotion-Sync Metric™', 'FURTHER INTERPRETATION',
+    'A closer look at what your profile means in everyday terms.')}
+  <div class="rp"><div class="rp-pad">
+    ${friendly("What’s happening in your system right now")}
+    <p class="soft" style="white-space:pre-line;">${narrative1(e)}</p>
+    <hr class="rp-hr">
+    ${card('Geometric Centroid', cen.head, '')}
+    ${friendly('What this level of demand means for you')}
+    <p class="soft" style="white-space:pre-line;">${narrative3(e)}</p>
+    <hr class="rp-hr">
+    ${card('Spike Analysis', spk.head, '')}
+    ${friendly('Why one part of your system may feel louder')}
+    <p class="soft" style="white-space:pre-line;">${narrative4(e)}</p>
+    <hr class="rp-hr">
+    ${card('Symmetry &amp; Balance', sym.head, '')}
+    ${friendly('How your energy is distributed across areas')}
+    <p class="soft" style="white-space:pre-line;">${narrative5(e)}</p>
+    <hr class="rp-hr">
+    ${card('Polarization / Structural Spread', pol.head, '')}
+    ${friendly('Where your system is split — and what helps')}
+    <p class="soft" style="white-space:pre-line;">${narrative6(e)}</p>
+    <hr class="rp-hr">
+    ${friendly('What this looks like in your inner state')}
+    <p class="soft" style="white-space:pre-line;">${narrative2(e)}</p>
+    <hr class="rp-hr">
+    ${friendly('Observed Pattern')}
+    <div class="obs-block" style="white-space:pre-line;">${observedPatternText()}</div>
+  </div></div>
+
+  ${cover('Emotion-Sync Metric™', 'ADVICE / REGULATION STRATEGY',
+    'How to stabilize your state without forcing change.')}
+  <div class="rp"><div class="rp-pad">
+    ${card('Immediate Decompression', dec.head.replace('Immediate Decompression: ',''), dec.deep)}
+    <hr class="rp-hr">
+    ${card('Resource Allocation', res.head.replace('Resource Allocation: ',''), res.deep)}
+    <hr class="rp-hr">
+    ${card('Boundary Setting', bnd.head.replace('Boundary Reinforcement: ',''), bnd.deep)}
+    <hr class="rp-hr">
+    <p class="soft" style="margin-bottom:6px;"><b>ADVICE ACTION PLAN</b></p>
+    ${card('Step-1: Stabilization (1–3 days)', s1.inten, s1.deep)}
+    <hr class="rp-hr">
+    ${card('Step-2: Adjustment', s2.head.replace('Step-2: ',''), s2.deep)}
+    <hr class="rp-hr">
+    ${card('Success Indicator', suc.head.replace('Success Indicator: ',''), suc.deep)}
+    <div class="rp-alert">${al.banner}</div>
+    ${al.notice ? `<div class="rp-notice">${al.notice}</div>` : ''}
+  </div></div>
+
+  ${cover('Emotion-Sync Metric™', 'How to Read This Report',
+    'Report Interpretation Manual — understanding the language of this profile.')}
+  <div class="rp"><div class="rp-pad">
+    <div class="rp-body">
+      <div class="rp-h4">Important Notice</div>
+      <p class="soft">This report is a structured self-observation framework designed to enhance awareness of current stress distribution and functional status. It does not constitute medical diagnosis, psychological treatment, or mental health evaluation. If persistent distress, functional impairment, or crisis risk is present, please consult a licensed medical or mental health professional.</p>
+      <div class="rp-h4">Data Interpretation Limitation</div>
+      <p class="soft">This framework reflects self-reported inputs at a specific point in time and may not capture all dynamic contextual variables, including environmental, relational, economic, or historical factors. Interpretations are based solely on structured input data.</p>
+      <div class="rp-h4">Core Diagnosis &amp; Current Situation</div>
+      <p class="soft"><b>Primary Load Driver</b> — The Primary Load Driver identifies the most activated functional axis within the current load distribution. It does not indicate pathology; rather, it reflects where the system is allocating energy. Recognizing this driver enables targeted regulation instead of generalized effort.</p>
+      <p class="soft"><b>Operational Capacity</b> — Operational Capacity represents the system’s functional reserve (0–100%). Higher values indicate stronger baseline resilience and recovery potential. This metric evaluates recovery margin, not personal worth or competence.</p>
+      <p class="soft"><b>Short-term Volatility</b> — Short-term Volatility measures dispersion across functional axes. Higher values suggest structural polarization. Moderate fluctuation is part of adaptive regulation; sustained elevation indicates the need for load stabilization.</p>
+      <div class="rp-h4">Emotion Status / Internal Load</div>
+      <p class="soft"><b>Arousal Level</b> — Arousal Level reflects physiological activation. Elevated levels indicate heightened alertness and mobilization, which can be redirected into focused engagement when regulated properly.</p>
+      <p class="soft"><b>Cognitive Redundancy</b> — Cognitive Redundancy reflects repetitive or high-frequency cognitive processing. Elevation does not imply dysfunction; it indicates intensified analytical activity.</p>
+      <p class="soft"><b>Motivation Reserve</b> — Motivation Reserve indicates sustainable execution energy. It measures adaptive engagement capacity rather than willpower or personality strength.</p>
+      <div class="rp-h4">Radar Interpretation</div>
+      <p class="soft"><b>Geometric Centroid</b> — The Geometric Centroid represents overall average load intensity. It indicates global pressure magnitude rather than source-specific activation.</p>
+      <p class="soft"><b>Spike Analysis</b> — Spike Analysis identifies axes that exceed average activation. A spike reflects focused mobilization, not necessarily risk.</p>
+      <p class="soft"><b>Polarization / Structural Spread</b> — Structural Spread measures the difference between the highest and lowest activated system axes. It does NOT measure stress level. It measures structural imbalance. Two people can both score "high activation": one may be evenly distributed (stable), one may be polarized (unstable). Spread reveals whether the system is integrated or fragmented.</p>
+      <p class="soft"><b>Symmetry &amp; Balance</b> — Symmetry &amp; Balance evaluates distribution symmetry. Structural shifts indicate strategic resource allocation. Temporary imbalance is often adaptive.</p>
+      <div class="rp-h4">Advice / Regulation Strategy</div>
+      <p class="soft">This section provides structured regulatory guidance based on current load distribution. Recommendations support stabilization and optimization and do not replace professional care.</p>
+      <div class="rp-h4">Legal &amp; Use Boundary</div>
+      <p class="soft">▪ Not intended for clinical diagnosis.<br>▪ Not a psychiatric screening tool.<br>▪ Not designed for crisis intervention.<br>▪ Not a substitute for medical or therapeutic services.</p>
+      <p class="soft">This framework reflects self-reported data at a specific point in time and may not account for all contextual variables.</p>
+    </div>
+  </div></div>
+
+  ${cover('Emotion-Sync Metric™', 'Report Usage &amp; Methodology Protection Statement',
+    'The nature of this deliverable — and the boundaries of its use.')}
+  <div class="rp"><div class="rp-pad">
+    <div class="rp-body soft">
+      <div class="rp-h4">1. Nature of Deliverable</div>
+      <p>This report constitutes a structured interpretive output generated under the Emotion-Sync Metric™ framework.</p>
+      <p>It reflects model-based functional mapping of self-reported inputs at the time of evaluation. Delivery of this report does not transfer ownership of: underlying model architecture; functional axis definitions; scoring logic; radar geometry methodology; regulation mapping algorithms; load distribution calculations; structural thresholds. All intellectual property remains exclusively owned by the framework creator.</p>
+      <div class="rp-h4">2. Intellectual Property Protection</div>
+      <p>All structural frameworks, load-classification systems, centroid calculations, activation thresholds, volatility interpretations, and regulatory mapping protocols remain proprietary.</p>
+      <p>The recipient is granted the right to use this report for personal awareness and internal reflection purposes only.</p>
+      <p>The recipient may not: replicate the functional mapping system; reproduce scoring logic or axis design; extract computational thresholds; reverse engineer structural algorithms; develop derivative emotional assessment systems; commercialize adaptations of the model; publicly distribute analytical logic without written authorization.</p>
+      <p>Access to outputs does not grant access to framework mechanics.</p>
+      <div class="rp-h4">3. Output vs. Framework Distinction</div>
+      <p>This report represents model-generated interpretive outputs. It does not provide access to the underlying structural algorithms, model construction methodology, scoring architecture, or regulation design logic. Interpretation of outputs does not imply disclosure of system mechanics.</p>
+      <div class="rp-h4">4. Limitation of Scope</div>
+      <p>This report reflects structured self-reported data at a specific point in time. It does not account for: undisclosed medical conditions; psychiatric diagnoses; trauma history; environmental instability; relational dynamics; economic stressors; neurobiological variability — unless explicitly modeled.</p>
+      <p>Results represent functional pattern mapping — not clinical determination.</p>
+      <div class="rp-h4">5. Non-Clinical &amp; Non-Therapeutic Clarification</div>
+      <p>This report is a structured awareness tool. It does not constitute: medical diagnosis; psychological evaluation; psychiatric screening; crisis intervention; therapeutic treatment; mental health certification; clinical recommendation; medical advice.</p>
+      <p>If persistent distress, impairment, or crisis risk is present, consultation with a licensed medical or mental health professional is recommended.</p>
+      <div class="rp-h4">6. Responsibility &amp; Use Disclaimer</div>
+      <p>Regulatory strategies provided in this report are informational in nature. Implementation decisions remain the responsibility of the individual. The framework does not guarantee emotional stabilization, behavioral outcomes, psychological improvement, or functional recovery.</p>
+      <p>This tool supports awareness — not treatment.</p>
+    </div>
+  </div></div>
+
+  <div class="rp"><div class="rp-pad rp-final">
+    <div class="rp-kicker">Emotion-Sync Metric™ · Module 1: Stabilization</div>
+    <div class="site">sindee.co</div>
+  </div></div>`);
+}
+function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* ---------- print / copy ---------- */
+document.getElementById('print-btn').addEventListener('click', () => {
+  // ensure the cover image is fully loaded before opening the print dialog
+  const img = document.getElementById('cover-img');
+  const go = () => window.print();
+  if (img && !img.complete) {
+    img.addEventListener('load', go, { once: true });
+    img.addEventListener('error', go, { once: true });
+  } else {
+    go();
+  }
+});
+document.getElementById('copy-btn').addEventListener('click', async () => {
+  const e = computeEngine(answers);
+  try {
+    const html = await buildRichHTML(e);
+    const text = reportPlainText(e);
+    if (navigator.clipboard && window.ClipboardItem) {
+      await navigator.clipboard.write([new ClipboardItem({
+        'text/html': new Blob([html], {type:'text/html'}),
+        'text/plain': new Blob([text], {type:'text/plain'})
+      })]);
+    } else {
+      await navigator.clipboard.writeText(text);
+    }
+    const b = document.getElementById('copy-btn');
+    b.textContent = 'Copied √';
+    setTimeout(() => b.textContent = 'Copy Full Report', 1800);
+  } catch(err) {
+    try { await navigator.clipboard.writeText(reportPlainText(e)); }
+    catch(e2){ alert('Copy not available in this browser — please use Print instead.'); }
+  }
+});
+/* chart as PNG data-URI for rich-text clipboard */
+function chartPNG(){
+  const svgEl = document.querySelector('#radar-fig svg');
+  try {
+    const xml = new XMLSerializer().serializeToString(svgEl);
+    const img = new Image();
+    const svg64 = btoa(unescape(encodeURIComponent(xml)));
+    const c = document.createElement('canvas'); c.width = 1120; c.height = 1120;
+    const ctx = c.getContext('2d');
+    return new Promise(res => {
+      img.onload = () => { ctx.drawImage(img, 0, 0, 1120, 1120); res(c.toDataURL('image/png')); };
+      img.onerror = () => res(null);
+      img.src = 'data:image/svg+xml;base64,' + svg64;
+    });
+  } catch(e){ return Promise.resolve(null); }
+}
+async function buildRichHTML(e){
+  const png = await chartPNG();
+  const chartImg = png ? `<img src="${png}" alt="Individual Stress & Functioning Profile radar chart" width="560">`
+    : document.getElementById('radar-fig').innerHTML;
+  return `<div><h2>Emotion-Sync Metric™ — Individual Performance &amp; Resilience Dynamic Monitor — Module 1: Stabilization</h2>
+  <p><b>${esc(clientName)}</b> · Profile Date ${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}</p>
+  ${chartImg}
+  <p><i>${AXIS_LABELS.map((t,i)=>(i+1)+' — '+t).join(' · ')}</i></p>
+  <p><i>This visualization is a strategic mapping of self-reported data for personal optimization. It represents a state of flow and is not a medical diagnostic tool.</i></p>
+  ${document.getElementById('rep-pages').innerText ? '<pre style="white-space:pre-wrap;font-family:Georgia,serif;">' + reportPlainText(e) + '</pre>' : ''}
+  <p>sindee.co</p></div>`;
+}
+function reportPlainText(e){
+  const L = [];
+  const dateStr = new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  L.push('EMOTION-SYNC METRIC™');
+  L.push('Individual Performance & Resilience Dynamic Monitor');
+  L.push('Module 1: Stabilization');
+  L.push('NAME: ' + clientName + ' | PROFILE DATE: ' + dateStr);
+  L.push('');
+  L.push('INDIVIDUAL STRESS & FUNCTIONING PROFILE');
+  L.push('Radar profile (scale 0–3): ' + answers.map((v,i)=>(i+1)+'=' + v).join(', '));
+  L.push('Axes: ' + AXIS_LABELS.map((t,i)=>(i+1)+' '+t).join('; '));
+  L.push('This visualization is a strategic mapping of self-reported data for personal optimization. It represents a state of flow and is not a medical diagnostic tool.');
+  L.push('');
+  // walk report DOM in document order so headings, covers, cards and
+  // interpretation paragraphs appear in the original reading sequence
+  const root = document.getElementById('rep-pages');
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT, {
+    acceptNode: n => n.closest('.cover,.rp-card,.friendly-h,p.soft,.obs-block,.rp-alert,.rp-notice,.rp-h4,div.rp-body > p') ? 1 : (n.matches('#rep-pages') ? 1 : 2)
+  });
+  let node;
+  const seen = new Set();
+  while ((node = walker.nextNode())) {
+    if (node.classList.contains('cover') && !seen.has(node)) {
+      seen.add(node);
+      L.push('=================================================');
+      node.querySelectorAll('.c-brand, h3, .c-sub, .c-prop').forEach(x => {
+        const t = x.textContent.trim();
+        if (t) L.push(t);
+      });
+      L.push('');
+    } else if (node.classList.contains('rp-card') && !seen.has(node)) {
+      seen.add(node);
+      const t = node.querySelector('h5').textContent.trim();
+      const v = node.querySelector('.rc-val');
+      const b = node.querySelector('.rc-body');
+      L.push('— ' + t + (v && v.textContent.trim() ? ': ' + v.textContent.trim() : ''));
+      if (b && b.textContent.trim()) L.push(b.textContent.trim());
+      L.push('');
+    } else if (node.classList.contains('friendly-h') && !seen.has(node)) {
+      seen.add(node);
+      L.push('✦ ' + node.textContent.replace('✦','').trim());
+      L.push('');
+    } else if (node.classList.contains('obs-block') && !seen.has(node)) {
+      seen.add(node);
+      L.push(node.textContent.trim());
+      L.push('');
+    } else if ((node.classList.contains('rp-alert') || node.classList.contains('rp-notice')) && !seen.has(node)) {
+      seen.add(node);
+      L.push(node.textContent.trim());
+      L.push('');
+    } else if (node.tagName === 'P' && !seen.has(node)) {
+      seen.add(node);
+      const t = node.textContent.trim();
+      if (t) L.push(t);
+    }
+  }
+  L.push('');
+  L.push('sindee.co');
+  return L.join('\n');
+}
+
+/* ---------- init ---------- */
+buildQuestions();
+updateScore();
+/* TEMP AUDIT HOOK - remove before release */
+if (location.search.includes('autotest=1')) {
+  clientName = 'dee';
+  answers = [2,3,2,1,0,1,1,2];
+  locked = true;
+  document.querySelectorAll('#q-list .opt').forEach(b => { b.disabled = true; });
+  document.getElementById('sec-quest').classList.add('sealed');
+  buildReport();
+  document.body.classList.add('report-mode');
+  document.getElementById('sec-gate').style.display = 'none';
+  document.getElementById('sec-quest').style.display = 'none';
+  document.getElementById('sec-report').style.display = '';
+  document.getElementById('report-area').style.display = 'block';
+}
+/* TEMP print-emulation probe - remove before release */
+if (location.search.includes('printcss=1')) {
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('style').forEach(s => {
+      for (const r of s.sheet.cssRules) {
+        if (r.media && r.media.mediaText === 'print') { r.media.mediaText = 'screen'; }
+      }
+    });
+  });
+}
+/* END TEMP AUDIT HOOK */
+</script>
+</body>
+</html>
