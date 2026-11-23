@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -71,6 +71,7 @@
   .rep-head h3{font-size:1.5rem; font-weight:400; color:var(--deep); letter-spacing:1px;}
   .rep-head .rep-sub{color:var(--ink-soft); font-size:.9rem; margin-top:6px; font-style:italic;}
   .rep-meta{font-size:.84rem; color:var(--ink-soft); margin-top:12px; letter-spacing:.5px;}
+  .meta-label{display:inline-block; min-width:120px; text-align:left; letter-spacing:2px; color:var(--accent); font-size:.72rem; text-transform:uppercase;}
 
   .rep-pages{display:flex; flex-direction:column; gap:34px;}
   .rp{background:#fffdfa; border:1px solid var(--line); border-radius:4px; overflow:hidden; page-break-inside:avoid; break-inside:avoid;}
@@ -83,7 +84,7 @@
   .rp-body .soft{color:var(--ink-soft);}
   .rp-hr{border:none; border-top:1px solid var(--line); margin:18px 0;}
   .rp-h4{font-size:1.05rem; color:var(--deep); letter-spacing:.5px; margin:22px 0 8px; font-weight:400;}
-  .rp-card{border:1px solid var(--line); border-radius:4px; padding:18px 20px; background:#fff; margin-bottom:14px;}
+  .rp-card{border:1px solid var(--line); border-radius:4px; padding:18px 20px; background:#fff; margin-bottom:14px; page-break-after:avoid; break-after:avoid;}
   .rp-card h5{font-size:.98rem; margin-bottom:6px; font-weight:400; letter-spacing:.5px; color:var(--deep);}
   .rp-card .rc-val{font-size:1.02rem; color:var(--ink); font-weight:bold; margin-bottom:8px;}
   .rp-card .rc-body{font-size:.88rem; color:var(--ink-soft); line-height:1.7;}
@@ -123,6 +124,7 @@
   .legal-sec .lg-site{font-size:1.05rem; letter-spacing:2px; color:var(--gold); text-align:center; margin-top:22px;}
   @media print{
     .legal-sec{-webkit-print-color-adjust:exact; print-color-adjust:exact;}
+    .legal-sec .esm-copyright-introduction{break-inside:avoid; page-break-inside:avoid;}
     .legal-sec .lg-h4{page-break-after:avoid;}
   }
 
@@ -152,13 +154,27 @@
     body.report-mode #sec-gate, body.report-mode #sec-quest{display:none !important;}
     #sec-report{border:none; background:#fff; box-shadow:none; padding:0; margin:0;}
     section{border:none; box-shadow:none; padding:0; margin-bottom:10px; background:#fff;}
-    .rp{border:none; box-shadow:none; page-break-inside:avoid;}
+    .rp{border:none; box-shadow:none;}
+    /* long analytical & legal blocks must flow across pages (no forced blank space) */
+    .rp:has(.legal-sec), .rp:has(.rp-body){page-break-inside:auto;}
+    .legal-sec, .rp-body{page-break-inside:auto;}
+    .rp-pad{orphans:3; widows:3;}
+    p{orphans:3; widows:3;}
     .cover{page-break-inside:avoid; -webkit-print-color-adjust:exact; print-color-adjust:exact;}
     .radar-fig svg{max-width:100%; -webkit-print-color-adjust:exact; print-color-adjust:exact;}
     .rep-pages{gap:12px;}
-    .rp-h4, .cover h3{page-break-after:avoid;}
+    .rp-h4, .cover h3{page-break-after:avoid;}  /* keep each analysis card with its paragraph */  .rp-card + p.soft{page-break-before:avoid; break-before:avoid;}  /* keep action-plan steps as units */  .rp-card{page-break-inside:avoid;}
+    /* Support Notice must never split */
+    .rp-notice{page-break-inside:avoid; break-inside:avoid;}
+    .rp-alert{page-break-inside:avoid; break-inside:avoid;}
+    /* legal heading + ownership line + intro paragraphs stay together */
+    .legal-sec h3, .legal-sec .lg-copy{page-break-after:avoid; break-after:avoid;}
+    /* Advice Action Plan heading groups with Step-1 card */
+    .ap-label{page-break-after:avoid; break-after:avoid; page-break-inside:avoid;}
     .cover-page{page-break-after:always; break-after:page; padding:0; margin:0;}
     .cover-page img{max-height:calc(100vh - 28mm); object-fit:contain; width:auto; max-width:100%; margin:0 auto; -webkit-print-color-adjust:exact; print-color-adjust:exact;}
+    /* workflow chrome (Step 3 heading etc.) must never print */
+    #sec-report .sec-tag, #sec-report h2, #sec-report .sec-desc{display:none !important;}
   }
 </style>
 </head>
@@ -774,7 +790,7 @@ function buildReport(){
   ${cover('Emotion-Sync Metric™', 'Individual Performance & Resilience Dynamic Monitor',
     'Module 1: Stabilization · A clear read on your internal state — before it turns into overwhelm.')}
   <div class="rp"><div class="rp-pad" style="text-align:center;">
-    <div class="rp-meta"><b>${esc(clientName)}</b> · PROFILE DATE ${dateStr}</div>
+    <div class="rp-meta"><span class="meta-label">NAME</span> <b>${esc(clientName)}</b><br><span class="meta-label">PROFILE DATE</span> ${dateStr}</div>
   </div></div>
 
   <div class="rp"><div class="rp-pad">
@@ -787,7 +803,7 @@ function buildReport(){
     <div class="radar-note">This visualization is a strategic mapping of self-reported data for personal optimization. It represents a state of flow and is not a medical diagnostic tool. Axes are numbered 1–8 and correspond to the eight self-check items above; rings mark scores 1, 2 and 3 on the 0–3 response scale.</div>
   </div></div>
 
-  ${cover('Emotion-Sync Metric™', 'CORE DIAGNOSIS &amp; CURRENT SITUATION',
+  ${cover('Emotion-Sync Metric™', 'CORE ANALYSIS &amp; CURRENT SITUATION',
     "Where your energy is currently going — and what’s driving it.")}
   <div class="rp"><div class="rp-pad">
     ${card('Primary Load Driver', d.tag, d.body)}
@@ -867,7 +883,7 @@ function buildReport(){
     <hr class="rp-hr">
     ${card('Boundary Setting', bnd.head.replace('Boundary Reinforcement: ',''), bnd.deep)}
     <hr class="rp-hr">
-    <p class="soft" style="margin-bottom:6px;"><b>ADVICE ACTION PLAN</b></p>
+    <p class="soft ap-label" style="margin-bottom:6px;"><b>ADVICE ACTION PLAN</b></p>
     ${card('Step-1: Stabilization (1–3 days)', s1.inten, s1.deep)}
     <hr class="rp-hr">
     ${card('Step-2: Adjustment', s2.head.replace('Step-2: ',''), s2.deep)}
@@ -877,6 +893,8 @@ function buildReport(){
     ${al.notice ? `<div class="rp-notice">${al.notice}</div>` : ''}
   </div></div>
 
+  
+
   ${cover('Emotion-Sync Metric™', 'How to Read This Report',
     'Report Interpretation Manual — understanding the language of this profile.')}
   <div class="rp"><div class="rp-pad">
@@ -885,7 +903,7 @@ function buildReport(){
       <p class="soft">This report is a structured self-observation framework designed to enhance awareness of current stress distribution and functional status. It does not constitute medical diagnosis, psychological treatment, or mental health evaluation. If persistent distress, functional impairment, or crisis risk is present, please consult a licensed medical or mental health professional.</p>
       <div class="rp-h4">Data Interpretation Limitation</div>
       <p class="soft">This framework reflects self-reported inputs at a specific point in time and may not capture all dynamic contextual variables, including environmental, relational, economic, or historical factors. Interpretations are based solely on structured input data.</p>
-      <div class="rp-h4">Core Diagnosis &amp; Current Situation</div>
+      <div class="rp-h4">Core Analysis &amp; Current Situation</div>
       <p class="soft"><b>Primary Load Driver</b> — The Primary Load Driver identifies the most activated functional axis within the current load distribution. It does not indicate pathology; rather, it reflects where the system is allocating energy. Recognizing this driver enables targeted regulation instead of generalized effort.</p>
       <p class="soft"><b>Operational Capacity</b> — Operational Capacity represents the system’s functional reserve (0–100%). Higher values indicate stronger baseline resilience and recovery potential. This metric evaluates recovery margin, not personal worth or competence.</p>
       <p class="soft"><b>Short-term Volatility</b> — Short-term Volatility measures dispersion across functional axes. Higher values suggest structural polarization. Moderate fluctuation is part of adaptive regulation; sustained elevation indicates the need for load stabilization.</p>
@@ -935,9 +953,10 @@ function buildReport(){
   <div class="rp"><div class="legal-sec">
     <div class="lg-kicker">Emotion-Sync Metric™ · Legal Notice</div>
     <h3>COPYRIGHT &amp; USAGE RESTRICTIONS</h3>
-    <p class="lg-copy"><span class="lg-strong">© 2026 [CONFIRMED LEGAL RIGHTS HOLDER]. All Rights Reserved.</span></p>
+    <p class="lg-copy"><span class="lg-strong">© 2026 sindee.co. All Rights Reserved.</span></p>
+    <p>ESM™ — Emotion-Sync Metric™ is an original proprietary framework published under the sindee.co brand. All intellectual property rights remain with the respective lawful rights holder.</p>
     <p><span class="lg-strong">ESM™ — Emotion-Sync Metric™</span> is an original, proprietary framework for structured reflection on emotional load, operational capacity, internal patterns, and related performance and resilience dynamics.</p>
-    <p>The original written content, questionnaire materials, interpretation texts, analytical explanations, report layouts, visual designs, and proprietary framework documentation associated with ESM™ are protected intellectual property to the extent provided by applicable law.</p>
+    <p class="esm-copyright-introduction">The original written content, questionnaire materials, interpretation texts, analytical explanations, report layouts, visual designs, and proprietary framework documentation associated with ESM™ are protected intellectual property to the extent provided by applicable law.</p>
     <div class="lg-h4">Ownership &amp; Limited License</div>
     <p>This report is provided exclusively to its named recipient for personal, private, non-commercial reflection and reference.</p>
     <p>The recipient receives a limited, non-exclusive, non-transferable license to access, read, print, and retain personal copies of the completed report.</p>
@@ -970,8 +989,12 @@ function buildReport(){
     <p>All rights not expressly granted are reserved.</p>
     <p>No implied commercial license is created through purchase, access, or possession of this report.</p>
     <div class="lg-h4">Licensing &amp; Permissions</div>
-    <p>For written permission, commercial licensing, or authorized collaboration enquiries, please visit:</p>
-    <div class="lg-site">sindee.co</div>
+    <p>For written permission, commercial licensing, or authorized collaboration enquiries, please visit <span class="lg-strong">sindee.co</span>.</p>
+  </div></div>
+
+<div class="rp"><div class="rp-pad">
+    <p class="soft" style="margin-bottom:12px;">Every emotion you’re experiencing is part of a normal process — your system is adjusting.</p>
+    <p class="soft">With a bit more steadiness and space, things will naturally begin to settle into place.</p>
   </div></div>
 
   <div class="rp"><div class="rp-pad rp-final">
@@ -1108,8 +1131,8 @@ buildQuestions();
 updateScore();
 /* TEMP AUDIT HOOK - remove before release */
 if (location.search.includes('autotest=1')) {
-  clientName = 'dee';
-  answers = [2,3,2,1,0,1,1,2];
+  clientName = 'AUDIT CLIENT';
+  answers = [0,1,2,3,1,2,3,0];
   locked = true;
   document.querySelectorAll('#q-list .opt').forEach(b => { b.disabled = true; });
   document.getElementById('sec-quest').classList.add('sealed');
